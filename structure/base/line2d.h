@@ -92,12 +92,13 @@ public:
         }
         return (end_.GetY() - start_.GetY()) / deltaX;
     }
-    T DistFromPoint(const Point2D<T>& point) const noexcept
+    template <typename T, typename = typename std::enable_if_t<std::is_same_v<std::decay_t<T>, Point2D<typename std::decay_t<T>::value_type>>>>
+    decltype(auto) DistFromPoint(T && point) const noexcept
     {
         T A = end_.GetY() - start_.GetY();
         T B = start_.GetX() - end_.GetX();
         T C = end_.GetX() * start_.GetY() - start_.GetX() * end_.GetY();
-        return std::abs(A * point.GetX() + B * point.GetY() + C) / std::sqrt(A * A + B * B);
+        return std::abs(A * std::forward<T>(point).GetX() + B * std::forward<T>(point).GetY() + C) / std::sqrt(A * A + B * B);
     }
     bool IsPointOnLine(const Point2D<T>& point, T tolerance = std::numeric_limits<T>::epsilon()) const noexcept
     {
