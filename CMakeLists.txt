@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
-project(baic_base)
+set(CMAKE_C_COMPILER "C:/msys64/ucrt64/bin/gcc.exe")
+set(CMAKE_CXX_COMPILER "C:/msys64/ucrt64/bin/g++.exe")
 
-add_subdirectory(baic_base/structure)
-add_subdirectory(baic_base/algorithm)
+project(BAIC_BASE LANGUAGES CXX)
+
+add_executable(baic_base main.cpp)

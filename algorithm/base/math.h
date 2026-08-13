@@ -5,6 +5,7 @@
 #include "..\..\structure\base\line3d.h"
 #include <cmath>
 #include <type_traits>
+#include <iostream>
 
 namespace algorithm 
 {
@@ -150,3 +151,11 @@ decltype(auto) DistFromPointToLine(T1 && point, T2 && line)
 
 
 } // namespace algorithm
+
+
+template <typename T, typename = typename std::enable_if_t<std::is_base_of_v<structure::Point2D<typename std::decay_t<T>::value_type>, std::decay_t<T>>>>
+std::ostream& operator<<(std::ostream& os, T && point)
+{
+    os << std::forward<T>(point).ToString();
+    return os;
+}
