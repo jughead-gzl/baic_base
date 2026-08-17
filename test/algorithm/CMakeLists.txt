@@ -1,1 +1,0 @@
-add_executable(parking_slot_test parking_slot_test.cpp)

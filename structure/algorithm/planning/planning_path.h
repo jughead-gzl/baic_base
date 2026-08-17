@@ -1,7 +1,7 @@
 #pragma once
 
-#include "..\algorithm\alam\odometry.h"
-#include "timestamp.h"
+#include "..\alam\odometry.h"
+#include "..\..\base\timestamp.h"
 
 #include <cmath>
 #include <stdexcept>
@@ -136,11 +136,6 @@ public:
         path_points.insert(path_points.begin(), std::forward<U>(waypoint));
     }
 
-    /**
-     * @brief Construct a new PathPoint in place at the end of the path.
-     * @tparam Args Arguments to construct a PathPoint.
-     * @param args Arguments to construct a PathPoint.
-     */
     template <typename... Args,
               typename = typename std::enable_if_t<std::is_constructible_v<PathPoint, Args...>>>
     void EmplaceBack(Args&&... args)
@@ -252,12 +247,8 @@ public:
         }
         return path_points.at(index);
     }
+
 public:
-    /**
-     * @brief Sum of Euclidean segment lengths over odometry poses projected onto the XY plane.
-     * @return Length of the path in 2D (XY plane).
-     * @note This method computes the length by summing the distances between consecutive waypoints, projected onto the XY plane.
-     */
     T GetLength2D() const noexcept
     {
         T length = static_cast<T>(0);
@@ -272,10 +263,7 @@ public:
         }
         return length;
     }
-    /**
-     * @brief Sum of Euclidean segment lengths over odometry poses in 3D space.
-     * @return The total length of the path in 3D space.
-     */
+
     T GetLength3D() const noexcept
     {
         T length = static_cast<T>(0);
@@ -291,9 +279,6 @@ public:
         return length;
     }
 
-    /**
-     * @brief Convert path summary to string.
-     */
     std::string ToString() const
     {
         return "PlanningPath{timestamp=" + timestamp_.ToString() +

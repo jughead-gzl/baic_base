@@ -1,10 +1,13 @@
 #pragma once
 
-#include <vector>
-#include <mutex>
-#include <memory>
-#include <type_traits>
+#include <chrono>
 #include <condition_variable>
+#include <cstddef>
+#include <memory>
+#include <mutex>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 namespace concurrent
 {
@@ -34,13 +37,15 @@ public:
     template<typename U, typename = typename std::enable_if_t<std::is_convertible_v<std::decay_t<U>, std::decay_t<T>>>>
     bool try_push(U && item)
     {
-        std::lock_guard<std::mutex> lock(mtx_);
-        if (is_full())
         {
-            return false;
+            std::lock_guard<std::mutex> lock(mtx_);
+            if (is_full())
+            {
+                return false;
+            }
+            buffer_[write_idx_] = std::forward<U>(item);
+            write_idx_ = (write_idx_ + 1) % buffer_.size();
         }
-        buffer_[write_idx_] = std::forward<U>(item);
-        write_idx_ = (write_idx_ + 1) % buffer_.size();
         not_empty_.notify_one();
         return true;
     }
@@ -71,7 +76,7 @@ public:
         std::unique_lock<std::mutex> lock(mtx_);
         not_empty_.wait(lock, [this]() { return !is_empty(); });
 
-        out = buffer_[read_idx_];
+        out = std::move(buffer_[read_idx_]);
         read_idx_ = (read_idx_ + 1) % buffer_.size();
 
         lock.unlock();
@@ -92,13 +97,15 @@ public:
     // 非阻塞读取，有数据返回true，空返回false
     bool try_pop(T& out)
     {
-        std::lock_guard<std::mutex> lock(mtx_);
-        if (is_empty())
         {
-            return false;
+            std::lock_guard<std::mutex> lock(mtx_);
+            if (is_empty())
+            {
+                return false;
+            }
+            out = std::move(buffer_[read_idx_]);
+            read_idx_ = (read_idx_ + 1) % buffer_.size();
         }
-        out = buffer_[read_idx_];
-        read_idx_ = (read_idx_ + 1) % buffer_.size();
         not_full_.notify_one();
         return true;
     }
@@ -122,7 +129,7 @@ public:
         std::unique_lock<std::mutex> lock(mtx_);
         if (not_empty_.wait_for(lock, timeout, [this]() { return !is_empty(); }))
         {
-            out = buffer_[read_idx_];
+            out = std::move(buffer_[read_idx_]);
             read_idx_ = (read_idx_ + 1) % buffer_.size();
             lock.unlock();
             not_full_.notify_one();

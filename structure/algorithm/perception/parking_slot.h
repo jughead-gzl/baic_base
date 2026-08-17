@@ -40,7 +40,7 @@ enum class ParkingSlotPhysicalType : uint8_t
  *
  * 使用中心点和 4 个顶点描述车位几何，并附带基础识别属性。
  */
-template <typename T, std::enable_if_t<std::is_floating_point_v<std::decay_t<T>>>>
+template <typename T, typename = typename std::enable_if_t<std::is_floating_point_v<std::decay_t<T>>>>
 class ParkingSlot
 {
 public:
@@ -59,7 +59,7 @@ public:
     /** @brief 识别置信度。 */
     using Confidence = T;
     /** @brief 最大 size_t 值。 */
-    using MaxSizeT = std::numeric_limits<std::size_t>::max();
+    static constexpr std::size_t MaxSizeT = std::numeric_limits<std::size_t>::max();
 
 private:
     /** @brief 数据时间戳。 */

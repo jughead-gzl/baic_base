@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "../../structure/base/planning_path.h"
+#include "../../structure/algorithm/planning/planning_path.h"
 
 namespace
 {
