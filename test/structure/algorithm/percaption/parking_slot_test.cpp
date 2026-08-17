@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cmath>
+#include <limits>
 
 #include "../../../../structure/algorithm/perception/parking_slot.h"
 
@@ -13,6 +14,7 @@ using EntranceVertices = Slot::EntranceVertices;
 using EntranceVertexIndices = Slot::EntranceVertexIndices;
 using ParkingSlotGeometryType = structure::perception::ParkingSlotGeometryType;
 using ParkingSlotPhysicalType = structure::perception::ParkingSlotPhysicalType;
+constexpr double kEpsilon = std::numeric_limits<double>::epsilon();
 
 Vertices MakeRectangleVertices(double x0, double y0, double x1, double y1)
 {
@@ -41,8 +43,8 @@ void TestConstructorAndGetters()
     assert(slot.GetID() == 42);
     assert(slot.GetGeometryType() == ParkingSlotGeometryType::PARALLEL_2);
     assert(slot.GetPhysicalType() == ParkingSlotPhysicalType::COMMON_1);
-    assert(std::abs(slot.GetCenter().GetX() - 1.0) < 1e-12);
-    assert(std::abs(slot.GetCenter().GetY() - 2.5) < 1e-12);
+    assert(std::abs(slot.GetCenter().GetX() - 1.0) < kEpsilon);
+    assert(std::abs(slot.GetCenter().GetY() - 2.5) < kEpsilon);
 }
 
 void TestEntrance()
@@ -56,14 +58,14 @@ void TestEntrance()
     slot.SetEntranceVertices(entrance_vertices);
     slot.SetEntranceVertexIndices(entrance_indices);
 
-    assert(std::abs(slot.GetEntranceVertices()[0].GetX() - 0.0) < 1e-12);
-    assert(std::abs(slot.GetEntranceVertices()[1].GetX() - 2.0) < 1e-12);
+    assert(std::abs(slot.GetEntranceVertices()[0].GetX() - 0.0) < kEpsilon);
+    assert(std::abs(slot.GetEntranceVertices()[1].GetX() - 2.0) < kEpsilon);
     assert(slot.GetEntranceVertexIndices()[0] == 0);
     assert(slot.GetEntranceVertexIndices()[1] == 1);
 
     slot.GetEntranceVertices()[0].SetX(-1.0);
     slot.GetEntranceVertexIndices()[1] = 3;
-    assert(std::abs(slot.GetEntranceVertices()[0].GetX() + 1.0) < 1e-12);
+    assert(std::abs(slot.GetEntranceVertices()[0].GetX() + 1.0) < kEpsilon);
     assert(slot.GetEntranceVertexIndices()[1] == 3);
 }
 
@@ -73,9 +75,9 @@ void TestGeometryMetrics()
     slot.SetVertices(MakeRectangleVertices(0.0, 0.0, 2.0, 5.0));
 
     assert(slot.HasValidGeometry());
-    assert(std::abs(slot.GetArea2D() - 10.0) < 1e-12);
-    assert(std::abs(slot.GetLength2D() - 5.0) < 1e-12);
-    assert(std::abs(slot.GetWidth2D() - 2.0) < 1e-12);
+    assert(std::abs(slot.GetArea2D() - 10.0) < kEpsilon);
+    assert(std::abs(slot.GetLength2D() - 5.0) < kEpsilon);
+    assert(std::abs(slot.GetWidth2D() - 2.0) < kEpsilon);
 }
 
 void TestSettersAndState()
@@ -94,9 +96,9 @@ void TestSettersAndState()
     assert(slot.GetID() == 7);
     assert(slot.GetGeometryType() == ParkingSlotGeometryType::PERPENDICULAR_1);
     assert(slot.GetPhysicalType() == ParkingSlotPhysicalType::MECHANICAL_3);
-    assert(std::abs(slot.GetCenter().GetX() - 3.5) < 1e-12);
-    assert(std::abs(slot.GetCenter().GetY() - 4.5) < 1e-12);
-    assert(std::abs(slot.GetCenter().GetZ() - 0.5) < 1e-12);
+    assert(std::abs(slot.GetCenter().GetX() - 3.5) < kEpsilon);
+    assert(std::abs(slot.GetCenter().GetY() - 4.5) < kEpsilon);
+    assert(std::abs(slot.GetCenter().GetZ() - 0.5) < kEpsilon);
     assert(slot.IsAvailable());
 }
 
@@ -105,13 +107,13 @@ void TestConfidenceClamp()
     Slot slot;
 
     slot.SetConfidence(-1.0);
-    assert(std::abs(slot.GetConfidence() - 0.0) < 1e-12);
+    assert(std::abs(slot.GetConfidence() - 0.0) < kEpsilon);
 
     slot.SetConfidence(0.5);
-    assert(std::abs(slot.GetConfidence() - 0.5) < 1e-12);
+    assert(std::abs(slot.GetConfidence() - 0.5) < kEpsilon);
 
     slot.SetConfidence(3.0);
-    assert(std::abs(slot.GetConfidence() - 1.0) < 1e-12);
+    assert(std::abs(slot.GetConfidence() - 1.0) < kEpsilon);
 }
 } // namespace
 
