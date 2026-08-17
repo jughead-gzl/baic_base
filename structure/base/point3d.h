@@ -4,7 +4,7 @@
 
 namespace structure
 {
-template <typename T, typename = typename std::enable_if_t<std::is_floating_point_v<T>>>
+template <typename T, typename = typename std::enable_if_t<std::is_arithmetic_v<T>>>
 class Point3D : public Point2D<T>
 {
 public:
@@ -12,56 +12,140 @@ public:
 private:
     T z_{static_cast<T>(0)};
 public:
-    Point3D(T x = static_cast<T>(0), T y = static_cast<T>(0), T z = static_cast<T>(0)) : Point2D<T>(x, y), z_(z)
-    {
-
-    }
-    Point3D(const Point2D<T>& point, T z = static_cast<T>(0)) : Point3D(point.GetX(), point.GetY(), z)
-    {
-
-    }
+    /**
+     * @brief Constructs a Point3D object with the given x, y, and z coordinates.
+     * @param x The x-coordinate (default is 0).
+     * @param y The y-coordinate (default is 0).
+     * @param z The z-coordinate (default is 0).
+     * @return A new Point3D object with the specified coordinates.
+     */
+    Point3D(T x = static_cast<T>(0), T y = static_cast<T>(0), T z = static_cast<T>(0)) : Point2D<T>(x, y), z_(z) {}
+    /**
+     * @brief Constructs a Point3D object from a Point2D object and an optional z-coordinate.
+     * @param point The Point2D object to copy the x and y coordinates from.
+     * @param z The z-coordinate (default is 0).
+     * @return A new Point3D object with the same x and y coordinates as the Point2D object and the specified z-coordinate.
+     */
+    Point3D(const Point2D<T>& point, T z = static_cast<T>(0)) : Point3D(point.GetX(), point.GetY(), z) {}
     Point3D(const Point3D&) = default;
     Point3D& operator=(const Point3D&) = default;
     Point3D(Point3D&&) = default;
     Point3D& operator=(Point3D&&) = default;
 public:
+    /**
+     * @brief Get the z-coordinate of the Point3D object.
+     * @return The z-coordinate of the Point3D object.
+     */
     const T& GetZ() const noexcept
     {
         return z_;
     }
+    /**
+     * @brief Get the z-coordinate of the Point3D object.
+     * @return The z-coordinate reference of the Point3D object.
+     */
     T& GetZ() noexcept
     {
         return z_;
     }
+    /**
+     * @brief Set the z-coordinate of the Point3D object.
+     * @param z The new z-coordinate (default is 0).
+     */
     void SetZ(T z = static_cast<T>(0))
     {
         z_ = z;
     }
+
+    /**
+     * @brief Access the coordinates of the Point3D object by index.
+     * @param index The index of the coordinate (0 for x, 1 for y
+     * and 2 for z).
+     * @return A reference to the coordinate at the specified index.
+     */
+    T&operator[] (std::size_t index) noexcept
+    {
+        switch (index)
+        {
+        case 0: return Point2D<T>::GetX();
+        case 1: return Point2D<T>::GetY();
+        case 2: return z_;
+        default: throw std::out_of_range("Index out of range for Point3D");
+        }
+    }
+    /**
+     * @brief Access the coordinates of the Point3D object by index (const version).
+     * @param index The index of the coordinate (0 for x, 1 for y and 2 for z).
+     * @return A const reference to the coordinate at the specified index.
+     */
+    const T&operator[] (std::size_t index) const noexcept
+    {
+        return const_cast<Point3D*>(this)->operator[](index);
+    }
 public:
+    /**
+     * @brief Calculate the Chebyshev distance between this Point3D and another point.
+     * @tparam U Type of the other point, must be derived from Point3D
+     * @param point The other Point3D object to calculate the distance to.
+     * @return The Chebyshev distance between this point and the other point.
+     */
     template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point3D, std::decay_t<U>>>>
     T DistOfChebyshev(U && point) const noexcept
     {
         return std::max(Point2D<T>::DistOfChebyshev(point), std::abs(z_ - point.GetZ()));
     }
+
+    /**
+     * @brief Calculate the Manhattan distance between this Point3D and another point.
+     * @tparam U Type of the other point, must be derived from Point3D
+     * @param point The other Point3D object to calculate the distance to.
+     * @return The Manhattan distance between this point and the other point.
+     */
     template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point3D, std::decay_t<U>>>>
     T DistOfManhattan(U && point) const noexcept
     {
         return Point2D<T>::DistOfManhattan(point) + std::abs(z_ - point.GetZ());
     }
+    /**
+     * @brief Calculate the Euclidean distance between this Point3D and another point.
+     * @tparam U Type of the other point, must be derived from Point3D
+     * @param point The other Point3D object to calculate the distance to.
+     * @return The Euclidean distance between this point and the other point.
+     */
     template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point3D, std::decay_t<U>>>>
     T DistOfEuclidean(U && point) const noexcept
     {
         return std::sqrt(std::pow((Point2D<T>::GetX() - point.GetX()), 2) + std::pow(Point2D<T>::GetY() - point.GetY(), 2) + std::pow(z_ - point.GetZ(), 2));
     }
 
+    template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point2D<T>, std::decay_t<U>>>>
+    T Dist2DOfChebyshev(U && point) const noexcept
+    {
+        return Point2D<T>::DistOfChebyshev(point);
+    }
+
+    template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point2D<T>, std::decay_t<U>>>>
+    T Dist2DOfManhattan(U && point) const noexcept
+    {
+        return Point2D<T>::DistOfManhattan(point);
+    }
+
+    template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point2D<T>, std::decay_t<U>>>>
+    T Dist2DOfEuclidean(U && point) const noexcept
+    {
+        return Point2D<T>::DistOfEuclidean(point);
+    }
+
     /**
      * @brief Translate the point by the given offsets in in x, y, and z directions.
+     * @tparam U Type of the offsets, must be an arithmetic type
      * @param dx Offset in the x direction (default is 0).
      * @param dy Offset in the y direction (default is 0).
      * @param dz Offset in the z direction (default is 0).
      * @return A reference to the current Point3D object after translation.
      */
-    const Point3D& Translate(T dx = static_cast<T>(0), T dy = static_cast<T>(0), T dz = static_cast<T>(0)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point3D& Translate(U dx = static_cast<U>(0), U dy = static_cast<U>(0), U dz = static_cast<U>(0)) noexcept
     {
         Point2D<T>::Translate(dx, dy);
         z_ += dz;
@@ -70,10 +154,12 @@ public:
 
     /**
      * @brief Translate the point by the given offset in the z direction.
+     * @tparam U Type of the offset, must be an arithmetic type
      * @param dz Offset in the z direction (default is 0).
      * @return A reference to the current Point3D object after translation.
      */
-    const Point3D& TranslateZ(T dz = static_cast<T>(0)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point3D& TranslateZ(U dz = static_cast<U>(0)) noexcept
     {
         z_ += dz;
         return *this;
@@ -81,11 +167,13 @@ public:
 
     /**
      * @brief Translate the point by the given offset x and y directions.
+     * @tparam U Type of the offsets, must be an arithmetic type
      * @param dx Offset in the x direction (default is 0).
      * @param dy Offset in the y direction (default is 0).
      * @return A reference to the current Point3D object after translation.
      */
-    const Point3D& TranslateXY(T dx = static_cast<T>(0), T dy = static_cast<T>(0)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point3D& TranslateXY(U dx = static_cast<U>(0), U dy = static_cast<U>(0)) noexcept
     {
         Point2D<T>::Translate(dx, dy);
         return *this;
@@ -94,11 +182,13 @@ public:
 
     /**
      * @brief Translate the point by the given offset x and z directions.
+     * @tparam U Type of the offsets, must be an arithmetic type
      * @param dx Offset in the x direction (default is 0).
      * @param dz Offset in the z direction (default is 0).
      * @return A reference to the current Point3D object after translation.
      */
-    const Point3D& TranslateXZ(T dx = static_cast<T>(0), T dz = static_cast<T>(0)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point3D& TranslateXZ(U dx = static_cast<U>(0), U dz = static_cast<U>(0)) noexcept
     {
         Point2D<T>::TranslateX(dx);
         z_ += dz;
@@ -107,11 +197,13 @@ public:
 
     /**
      * @brief Translate the point by the given offset y and z directions.
+     * @tparam U Type of the offsets, must be an arithmetic type
      * @param dy Offset in the y direction (default is 0).
      * @param dz Offset in the z direction (default is 0).
      * @return A reference to the current Point3D object after translation.
      */
-    const Point3D& TranslateYZ(T dy = static_cast<T>(0), T dz = static_cast<T>(0)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point3D& TranslateYZ(U dy = static_cast<U>(0), U dz = static_cast<U>(0)) noexcept
     {
         Point2D<T>::TranslateY(dy);
         z_ += dz;
@@ -119,23 +211,28 @@ public:
     }
 
     /**
+    /**
      * @brief Rotate the point around the origin by the given angle in degrees.
+     * @tparam U Type of the angle, must be an arithmetic type
      * @param angle Angle in degrees (default is 0).
      * @return A reference to the current Point3D object after rotation.
      */
-    const Point3D& Rotate(T angle = static_cast<T>(0)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point3D& Rotate(U angle = static_cast<U>(0)) noexcept
     {
         Point2D<T>::Rotate(angle);
         return *this;
     }
     /**
      * @brief Scale the point by the given factors in x, y, and z directions.
+     * @tparam U Type of the scaling factors, must be an arithmetic type
      * @param sx Scaling factor in the x direction (default is 1).
      * @param sy Scaling factor in the y direction (default is 1).
      * @param sz Scaling factor in the z direction (default is 1).
      * @return A reference to the current Point3D object after scaling.
      */
-    const Point3D& Scale(T sx = static_cast<T>(1), T sy = static_cast<T>(1), T sz = static_cast<T>(1)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point3D& Scale(U sx = static_cast<U>(1), U sy = static_cast<U>(1), U sz = static_cast<U>(1)) noexcept
     {
         Point2D<T>::Scale(sx, sy);
         z_ *= sz;
@@ -145,10 +242,12 @@ public:
 
     /**
      * @brief Scale the point by the given factor in the z direction.
+     * @tparam U Type of the scaling factor, must be an arithmetic type
      * @param sz Scaling factor in the z direction (default is 1).
      * @return A reference to the current Point3D object after scaling.
      */
-    const Point3D& ScaleZ(T sz = static_cast<T>(1)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point3D& ScaleZ(U sz = static_cast<U>(1)) noexcept
     {
         z_ *= sz;
         return *this;
@@ -156,11 +255,13 @@ public:
 
     /**
      * @brief Scale the point by the given factors in x and y directions.
+     * @tparam U Type of the scaling factors, must be an arithmetic type
      * @param sx Scaling factor in the x direction (default is 1).
      * @param sy Scaling factor in the y direction (default is 1).
      * @return A reference to the current Point3D object after scaling.
      */
-    const Point3D& ScaleXY(T sx = static_cast<T>(1), T sy = static_cast<T>(1)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point3D& ScaleXY(U sx = static_cast<U>(1), U sy = static_cast<U>(1)) noexcept
     {
         Point2D<T>::Scale(sx, sy);
         return *this;
@@ -168,11 +269,13 @@ public:
 
     /**
      * @brief Scale the point by the given factors in x and z directions.
+     * @tparam U Type of the scaling factors, must be an arithmetic type
      * @param sx Scaling factor in the x direction (default is 1).
      * @param sz Scaling factor in the z direction (default is 1).
      * @return A reference to the current Point3D object after scaling.
      */
-    const Point3D& ScaleXZ(T sx = static_cast<T>(1), T sz = static_cast<T>(1)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point3D& ScaleXZ(U sx = static_cast<U>(1), U sz = static_cast<U>(1)) noexcept
     {
         Point2D<T>::ScaleX(sx);
         ScaleZ(sz);
@@ -181,11 +284,13 @@ public:
 
     /**
      * @brief Scale the point by the given factors in y and z directions.
+     * @tparam U Type of the scaling factors, must be an arithmetic type
      * @param sy Scaling factor in the y direction (default is 1).
      * @param sz Scaling factor in the z direction (default is 1).
      * @return A reference to the current Point3D object after scaling.
      */
-    const Point3D& ScaleYZ(T sy = static_cast<T>(1), T sz = static_cast<T>(1)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point3D& ScaleYZ(U sy = static_cast<U>(1), U sz = static_cast<U>(1)) noexcept
     {
         Point2D<T>::ScaleY(sy);
         ScaleZ(sz);
@@ -194,34 +299,14 @@ public:
 
     /**
      * @brief Multiplication operator for Point3D.
+     * @tparam U Type of the scalar, must be an arithmetic type
      * @param scalar The scalar value to multiply with the point.
      * @return A new Point3D that is the result of the multiplication.
      */
-    Point3D operator*(T scalar) const noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    Point3D operator*(U scalar) const noexcept
     {
         return Point3D(Point2D<T>::operator*(scalar), z_ * scalar);
-    }
-
-    /**
-     * @brief Three-way comparison operator for Point3D.
-     * @tparam U Type of the other point, must be derived from Point3D
-     */
-    template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point3D, std::decay_t<U>>>>
-      decltype(auto) operator<=>(U && other) const noexcept
-    {
-        if (Point2D<T>::GetX() < std::forward<U>(other).GetX()) 
-            return std::strong_ordering::less;
-        if (Point2D<T>::GetX() > std::forward<U>(other).GetX()) 
-            return std::strong_ordering::greater;
-        if (Point2D<T>::GetY() < std::forward<U>(other).GetY()) 
-            return std::strong_ordering::less;
-        if (Point2D<T>::GetY() > std::forward<U>(other).GetY()) 
-            return std::strong_ordering::greater;
-        if (z_ < std::forward<U>(other).GetZ()) 
-            return std::strong_ordering::less;
-        if (z_ > std::forward<U>(other).GetZ()) 
-            return std::strong_ordering::greater;
-        return std::strong_ordering::equal;
     }
 
     /**
@@ -256,14 +341,6 @@ public:
         return Point3D(Point2D<T>::operator+(std::forward<U>(other)), z_ + std::forward<U>(other).GetZ());
     }
 
-    template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point3D, std::decay_t<U>>>>
-    Point3D& Add(U && other) noexcept
-    {
-        Point2D<T>::Add(std::forward<U>(other));
-        z_ += std::forward<U>(other).GetZ();
-        return *this;
-    }
-
     /**
      * @brief Subtraction operator for Point3D.
      * @tparam U Type of the other point, must be derived from Point3D
@@ -272,19 +349,6 @@ public:
     Point3D operator-(U && other) const noexcept
     {
         return Point3D(Point2D<T>::operator-(std::forward<U>(other)), z_ - std::forward<U>(other).GetZ());
-    }
-
-    /**
-     * @brief Subtract another Point3D from this point and return the result as a new Point3D.
-     * @tparam U Type of the other point, must be derived from Point3D
-     * @return A new Point3D that is the difference between this point and the other
-     */
-    template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point3D, std::decay_t<U>>>>
-    Point3D& Sub(U && other) noexcept
-    {
-        Point2D<T>::Sub(std::forward<U>(other));
-        z_ -= std::forward<U>(other).GetZ();
-        return *this;
     }
 
     /**
@@ -342,7 +406,5 @@ public:
             Scale(static_cast<T>(1) / length, static_cast<T>(1) / length, static_cast<T>(1) / length);
         }
     }
-
-    
 };
 };

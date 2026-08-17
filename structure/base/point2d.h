@@ -8,7 +8,7 @@
 namespace structure
 {
 
-template <typename T, typename = typename std::enable_if_t<std::is_floating_point_v<T>>>
+template <typename T, typename = typename std::enable_if_t<std::is_arithmetic_v<T>>>
 class Point2D
 {
 public:
@@ -42,6 +42,21 @@ public:
     {
         return y_;
     }
+    T&operator[] (std::size_t index) noexcept
+    {
+        switch (index)
+        {
+        case 0: return x_;
+        case 1: return y_;
+        default: throw std::out_of_range("Index out of range for Point2D");
+        }
+    }
+
+    const T&operator[] (std::size_t index) const noexcept
+    {
+        return const_cast<Point2D*>(this)->operator[](index);
+    }
+
     void SetX(T x = static_cast<T>(0)) noexcept
     {
         x_ = x;
@@ -69,11 +84,13 @@ public:
 
     /**
      * @brief Translate the point by the given offsets in x and y directions.
+     * @tparam U Type of the offsets, must be an arithmetic type
      * @param dx Offset in the x direction (default is 0).
      * @param dy Offset in the y direction (default is 0).
      * @return A reference to the current Point2D object after translation.
      */
-    const Point2D& Translate(T dx = static_cast<T>(0), T dy = static_cast<T>(0)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point2D& Translate(U dx = static_cast<U>(0), U dy = static_cast<U>(0)) noexcept
     {
         x_ += dx;
         y_ += dy;
@@ -82,10 +99,12 @@ public:
 
     /**
      * @brief Translate the point by the given offset in the x direction.
+     * @tparam U Type of the offset, must be an arithmetic type
      * @param dx Offset in the x direction (default is 0).
      * @return A reference to the current Point2D object after translation.
      */
-    const Point2D& TranslateX(T dx = static_cast<T>(0)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point2D& TranslateX(U dx = static_cast<U>(0)) noexcept
     {
         x_ += dx;
         return *this;
@@ -93,22 +112,48 @@ public:
 
     /**
      * @brief Translate the point by the given offset in the y direction.
+     * @tparam U Type of the offset, must be an arithmetic type
      * @param dy Offset in the y direction (default is 0).
      * @return A reference to the current Point2D object after translation.
      */
-    const Point2D& TranslateY(T dy = static_cast<T>(0)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point2D& TranslateY(U dy = static_cast<U>(0)) noexcept
     {
         y_ += dy;
         return *this;
     }
 
     /**
+     * @brief Addition operator for Point2D.
+     * @tparam U Type of the other point, must be derived from Point2D
+     * @return A new Point2D that is the sum of this point and the other point
+     */
+    template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point2D, std::decay_t<U>>>>
+    Point2D operator+(U && other) const noexcept
+    {
+        return Point2D(x_ + std::forward<U>(other).GetX(), y_ + std::forward<U>(other).GetY());
+    }
+
+    /**
+     * @brief Subtraction operator for Point2D.
+     * @tparam U Type of the other point, must be derived from Point2D
+     * @return A new Point2D that is the difference between this point and the other point
+     */
+    template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point2D, std::decay_t<U>>>>
+    Point2D operator-(U && other) const noexcept
+    {
+        return Point2D(x_ - std::forward<U>(other).GetX(), y_ - std::forward<U>(other).GetY());
+    }
+
+    /**
      * @brief Scale the point by the given factors in x and y directions.
+     * @tparam U Type of the scaling factors, must be an arithmetic type
      * @param sx Scaling factor in the x direction (default is 1).
      * @param sy Scaling factor in the y direction (default is 1).
      * @return A reference to the current Point2D object after scaling.
      */
-    const Point2D& Scale(T sx = static_cast<T>(1), T sy = static_cast<T>(1)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point2D& Scale(U sx = static_cast<U>(1), U sy = static_cast<U>(1)) noexcept
     {
         x_ *= sx;
         y_ *= sy;
@@ -117,10 +162,12 @@ public:
 
     /**
      * @brief Scale the point by the given factor in the x direction.
+     * @tparam U Type of the scaling factor, must be an arithmetic type
      * @param sx Scaling factor in the x direction (default is 1).
      * @return A reference to the current Point2D object after scaling.
      */
-    const Point2D& ScaleX(T sx = static_cast<T>(1)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point2D& ScaleX(U sx = static_cast<U>(1)) noexcept
     {
         x_ *= sx;
         return *this;
@@ -128,10 +175,12 @@ public:
 
     /**
      * @brief Scale the point by the given factor in the y direction.
+     * @tparam U Type of the scaling factor, must be an arithmetic type
      * @param sy Scaling factor in the y direction (default is 1).
      * @return A reference to the current Point2D object after scaling.
      */
-    const Point2D& ScaleY(T sy = static_cast<T>(1)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point2D& ScaleY(U sy = static_cast<U>(1)) noexcept
     {
         y_ *= sy;
         return *this;
@@ -151,10 +200,12 @@ public:
 
     /**
      * @brief Rotate the point around the origin by the given angle in degrees.
+     * @tparam U Type of the angle, must be an arithmetic type
      * @param angle Angle in degrees (default is 0).
      * @return A reference to the current Point2D object after rotation.
      */
-    const Point2D& Rotate(T angle = static_cast<T>(0)) noexcept
+    template <typename U, typename = typename std::enable_if_t<std::is_arithmetic_v<std::decay_t<U>>>>
+    const Point2D& Rotate(U angle = static_cast<U>(0)) noexcept
     {
         T radian = angle * static_cast<T>(M_PI) / static_cast<T>(180);
         T new_x = x_ * std::cos(radian) - y_ * std::sin(radian);
@@ -166,6 +217,7 @@ public:
 
     /**
      * @brief Rotate the point around the origin by the given angle in degrees in the clockwise direction.
+     * @tparam U Type of the angle, must be an arithmetic type
      * @param angle Angle in degrees (default is 0).
      * @return A reference to the current Point2D object after rotation.
      */
@@ -180,6 +232,7 @@ public:
 
     /**
      * @brief Rotate the point around the origin by the given angle in degrees in the counterclockwise direction.
+     * @tparam U Type of the angle, must be an arithmetic type
      * @param angle Angle in degrees (default is 0).
      * @return A reference to the current Point2D object after rotation.
      */
@@ -190,21 +243,6 @@ public:
         T new_x = x_ * std::cos(radian) + y_ * std::sin(radian);
         T new_y = -x_ * std::sin(radian) + y_ * std::cos(radian);
         return Point2D(new_x, new_y);
-    }
-
-    /**
-     * @brief Three-way comparison operator for Point2D.
-     * @tparam U Type of the other point, must be derived from Point2D
-     * @return std::strong_ordering indicating the comparison result
-     */
-    template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point2D, std::decay_t<U>>>>
-    decltype(auto) operator<=>(U && other) const noexcept
-    {
-        if (x_ < std::forward<U>(other).GetX()) return std::strong_ordering::less;
-        if (x_ > std::forward<U>(other).GetX()) return std::strong_ordering::greater;
-        if (y_ < std::forward<U>(other).GetY()) return std::strong_ordering::less;
-        if (y_ > std::forward<U>(other).GetY()) return std::strong_ordering::greater;
-        return std::strong_ordering::equal;
     }
 
     /**
@@ -237,53 +275,6 @@ public:
         return !(*this == std::forward<U>(other));
     }
 
-    /**
-     * @brief Addition operator for Point2D.
-     * @tparam U Type of the other point, must be derived from Point2D
-     * @return A new Point2D that is the sum of this point and the other point
-     */
-    template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point2D, std::decay_t<U>>>>
-    Point2D operator+(U && other) const noexcept
-    {
-        return Point2D(x_ + std::forward<U>(other).GetX(), y_ + std::forward<U>(other).GetY());
-    }
-
-    /**
-     * @brief Add another Point2D to this point and return the result as a new Point2D.
-     * @tparam U Type of the other point, must be derived from Point2D
-     * @return A new Point2D that is the sum of this point and the other point
-     */
-    template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point2D, std::decay_t<U>>>>
-    Point2D& Add(U && other) noexcept
-    {
-        x_ += std::forward<U>(other).GetX();
-        y_ += std::forward<U>(other).GetY();
-        return *this;
-    }
-
-    /**
-     * @brief Subtraction operator for Point2D.
-     * @tparam U Type of the other point, must be derived from Point2D
-     * @return A new Point2D that is the difference between this point and the other point
-     */
-    template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point2D, std::decay_t<U>>>>
-    Point2D operator-(U && other) const noexcept
-    {
-        return Point2D(x_ - std::forward<U>(other).GetX(), y_ - std::forward<U>(other).GetY());
-    }
-
-    /**
-     * @brief Subtract another Point2D from this point and return the result as a new Point2D.
-     * @tparam U Type of the other point, must be derived from Point2D
-     * @return A new Point2D that is the difference between this point and the other point
-     */
-    template <typename U, typename = typename std::enable_if_t<std::is_base_of_v<Point2D, std::decay_t<U>>>>
-    Point2D& Sub(U && other) noexcept
-    {
-        x_ -= std::forward<U>(other).GetX();
-        y_ -= std::forward<U>(other).GetY();
-        return *this;
-    }
 
     /**
      * @brief Convert the Point2D to a string representation.

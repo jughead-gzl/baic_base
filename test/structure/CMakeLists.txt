@@ -1,0 +1,7 @@
+add_executable(point2d_test point2d_test.cpp)
+add_executable(point3d_test point3d_test.cpp)
+add_executable(point6d_test point6d_test.cpp)
+add_executable(planning_path_test planning_path_test.cpp)
+add_executable(timer_test timer_test.cpp)
+add_executable(timestamp_test timestamp_test.cpp)
+add_executable(odometry_test odometry_test.cpp)

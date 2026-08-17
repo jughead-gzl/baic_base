@@ -10,13 +10,13 @@ int main()
     structure::Point2D<double> p1(1.0, 1.0);
     structure::Point2D<double> p2(1.0, 1.0);
    
-    if (p1 == p2)
+    if (p1 != p2)
     {
-        std::cout << "Points are equal." << std::endl;
+        std::cout << "Points are not equal." << std::endl;
     }
     else
     {
-        std::cout << "Points are not equal." << std::endl;
+        std::cout << "Points are equal." << std::endl;
     }
 
 
