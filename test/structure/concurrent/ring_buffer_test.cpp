@@ -2,13 +2,13 @@
 #include <chrono>
 #include <thread>
 
-#include "../../../structure/concurrent/ring_buffer.h"
+#include "../../../structure/concurrent/RingBuffer.h"
 
 namespace
 {
 void TestFifoAndCapacity()
 {
-    concurrent::ring_buffer<int, 2> queue;
+    concurrent::RingBuffer<int, 2> queue;
 
     assert(queue.capacity() == 2);
     assert(queue.empty());
@@ -28,7 +28,7 @@ void TestFifoAndCapacity()
 
 void TestTimedOperations()
 {
-    concurrent::ring_buffer<int, 1> queue;
+    concurrent::RingBuffer<int, 1> queue;
     int value = 0;
 
     assert(!queue.try_pop_for(value, std::chrono::milliseconds(1)));
@@ -40,7 +40,7 @@ void TestTimedOperations()
 
 void TestBlockingOperations()
 {
-    concurrent::ring_buffer<int, 1> queue;
+    concurrent::RingBuffer<int, 1> queue;
     std::thread producer([&queue]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
         queue.push(42);
