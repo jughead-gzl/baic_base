@@ -1,0 +1,1 @@
+add_executable(parking_event_manager_test parking_event_manager_test.cpp)
