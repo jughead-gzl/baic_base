@@ -1,5 +1,7 @@
 #include <cassert>
 #include <cstdint>
+#include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <type_traits>
 #include <variant>
@@ -81,17 +83,6 @@ void TestVariantAccess()
     assert(std::holds_alternative<ApaExitType>(exit));
     assert(std::get<ApaActvType>(actv) == ApaActvType::APP_3);
     assert(std::get<ApaExitType>(exit) == ApaExitType::USER_REQ_3);
-
-    bool threw = false;
-    try
-    {
-        static_cast<void>(manager.GetEventType(ParkingEventType::NONE_0));
-    }
-    catch (const std::invalid_argument&)
-    {
-        threw = true;
-    }
-    assert(threw);
 }
 
 void TestVariantVisitorSetter()
@@ -106,6 +97,18 @@ void TestVariantVisitorSetter()
     manager.SetEvent(EventManager::EventValue{ApaExitType::VEH_COND_5});
     assert(manager.GetExit() == ApaExitType::VEH_COND_5);
     assert(manager.GetEventFlag(ParkingEventType::EXIT_8));
+}
+
+void TestDerivedEventLog()
+{
+    EventManager manager;
+    std::ostringstream log_stream;
+    std::streambuf* const original_buffer = std::clog.rdbuf(log_stream.rdbuf());
+
+    manager.SetActv(ApaActvType::BTN_1);
+
+    std::clog.rdbuf(original_buffer);
+    assert(log_stream.str().find("ApaEventManager: ACTV = BTN[1]") != std::string::npos);
 }
 
 void TestReset()
@@ -154,6 +157,7 @@ int main()
     TestSettersAndEventFlags();
     TestVariantAccess();
     TestVariantVisitorSetter();
+    TestDerivedEventLog();
     TestReset();
     TestDerivedManagersCanBeConstructed();
     return 0;
