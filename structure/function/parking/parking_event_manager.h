@@ -3,7 +3,9 @@
 #include <type_traits>
 #include <variant>
 #include <stdexcept>
+#include <iostream>
 #include "parking_event_base.h"
+#include "parking_event_enum.h"
 
 namespace structure
 {
@@ -63,6 +65,9 @@ public:
 
 private:
     EventBase event_base_;
+
+protected:
+    virtual void LogEventChange(ParkingEventType event_type, int value) const noexcept = 0;
 
 private:
     /**
@@ -182,7 +187,7 @@ public:
             case ParkingEventType::FAIL_7: return event_base_.fail_;
             case ParkingEventType::EXIT_8: return event_base_.exit_;
             case ParkingEventType::NONE_0:
-            default: throw std::invalid_argument("Invalid ParkingEventType for GetEventType");  
+            default: ActvType::NONE_0; // Return a default value for NONE_0 or invalid event
         }
     }
 
@@ -260,6 +265,8 @@ public:
     void SetActv(ActvType value) noexcept 
     { 
         event_base_.actv_ = value; 
+        LogEventChange(ParkingEventType::ACTV_1,
+                   static_cast<int>(static_cast<std::underlying_type_t<ActvType>>(value)));
     }
 
     /**
@@ -269,6 +276,8 @@ public:
     void SetActvInhibited(ActvIhbtType value) noexcept 
     { 
         event_base_.actv_inhibited_ = value; 
+        LogEventChange(ParkingEventType::ACTV_IHBT_2,
+                   static_cast<int>(static_cast<std::underlying_type_t<ActvIhbtType>>(value)));
     }
 
     /**
@@ -278,6 +287,8 @@ public:
     void SetGuidance(GuidanceType value) noexcept 
     { 
         event_base_.guidance_ = value; 
+        LogEventChange(ParkingEventType::GUIDANCE_3,
+                   static_cast<int>(static_cast<std::underlying_type_t<GuidanceType>>(value)));
     }
 
     /**
@@ -287,6 +298,8 @@ public:
     void SetGuidanceInhibited(GuidanceIhbtType value) noexcept
     {
         event_base_.guidance_inhibited_ = value;
+        LogEventChange(ParkingEventType::GUIDANCE_IHBT_4,
+                   static_cast<int>(static_cast<std::underlying_type_t<GuidanceIhbtType>>(value)));
     }
 
     /**
@@ -296,6 +309,8 @@ public:
     void SetPause(PauseType value) noexcept 
     { 
         event_base_.pause_ = value; 
+        LogEventChange(ParkingEventType::PAUSE_5,
+                   static_cast<int>(static_cast<std::underlying_type_t<PauseType>>(value)));
     }
 
     /**
@@ -305,6 +320,8 @@ public:
     void SetSuccess(SuccessType value) noexcept 
     { 
         event_base_.success_ = value; 
+        LogEventChange(ParkingEventType::SUCCESS_6,
+                   static_cast<int>(static_cast<std::underlying_type_t<SuccessType>>(value)));
     }
 
     /**
@@ -314,6 +331,8 @@ public:
     void SetFail(FailType value) noexcept 
     { 
         event_base_.fail_ = value; 
+        LogEventChange(ParkingEventType::FAIL_7,
+                   static_cast<int>(static_cast<std::underlying_type_t<FailType>>(value)));
     }
 
     /**
@@ -323,6 +342,8 @@ public:
     void SetExit(ExitType value) noexcept 
     { 
         event_base_.exit_ = value; 
+        LogEventChange(ParkingEventType::EXIT_8,
+                   static_cast<int>(static_cast<std::underlying_type_t<ExitType>>(value)));
     }
 
     /**
@@ -335,14 +356,14 @@ public:
     {
         switch (event)
         {
-            case ParkingEventType::ACTV_1: event_base_.actv_ = std::get<ActvType>(value); break;
-            case ParkingEventType::ACTV_IHBT_2: event_base_.actv_inhibited_ = std::get<ActvIhbtType>(value); break;
-            case ParkingEventType::GUIDANCE_3: event_base_.guidance_ = std::get<GuidanceType>(value); break;
-            case ParkingEventType::GUIDANCE_IHBT_4: event_base_.guidance_inhibited_ = std::get<GuidanceIhbtType>(value); break;
-            case ParkingEventType::PAUSE_5: event_base_.pause_ = std::get<PauseType>(value); break;
-            case ParkingEventType::SUCCESS_6: event_base_.success_ = std::get<SuccessType>(value); break;
-            case ParkingEventType::FAIL_7: event_base_.fail_ = std::get<FailType>(value); break;
-            case ParkingEventType::EXIT_8: event_base_.exit_ = std::get<ExitType>(value); break;
+            case ParkingEventType::ACTV_1: SetActv(std::get<ActvType>(value)); break;
+            case ParkingEventType::ACTV_IHBT_2: SetActvInhibited(std::get<ActvIhbtType>(value)); break;
+            case ParkingEventType::GUIDANCE_3: SetGuidance(std::get<GuidanceType>(value)); break;
+            case ParkingEventType::GUIDANCE_IHBT_4: SetGuidanceInhibited(std::get<GuidanceIhbtType>(value)); break;
+            case ParkingEventType::PAUSE_5: SetPause(std::get<PauseType>(value)); break;
+            case ParkingEventType::SUCCESS_6: SetSuccess(std::get<SuccessType>(value)); break;
+            case ParkingEventType::FAIL_7: SetFail(std::get<FailType>(value)); break;
+            case ParkingEventType::EXIT_8: SetExit(std::get<ExitType>(value)); break;
             case ParkingEventType::NONE_0:
             default: break;
         }
@@ -354,35 +375,35 @@ public:
             using T = std::decay_t<decltype(arg)>;
             if constexpr (std::is_same_v<T, ActvType>) 
             {
-                event_base_.actv_ = arg;
+                SetActv(arg);
             } 
             else if constexpr (std::is_same_v<T, ActvIhbtType>) 
             {
-                event_base_.actv_inhibited_ = arg;
+                SetActvInhibited(arg);
             } 
             else if constexpr (std::is_same_v<T, GuidanceType>) 
             {
-                event_base_.guidance_ = arg;
+                SetGuidance(arg);
             } 
             else if constexpr (std::is_same_v<T, GuidanceIhbtType>) 
             {
-                event_base_.guidance_inhibited_ = arg;
+                SetGuidanceInhibited(arg);
             } 
             else if constexpr (std::is_same_v<T, PauseType>) 
             {
-                event_base_.pause_ = arg;
+                SetPause(arg);
             } 
             else if constexpr (std::is_same_v<T, SuccessType>) 
             {
-                event_base_.success_ = arg;
+                SetSuccess(arg);
             } 
             else if constexpr (std::is_same_v<T, FailType>) 
             {
-                event_base_.fail_ = arg;
+                SetFail(arg);
             } 
             else if constexpr (std::is_same_v<T, ExitType>) 
             {
-                event_base_.exit_ = arg;
+                SetExit(arg);
             }
         }, value);
     }
@@ -398,6 +419,7 @@ public:
         event_base_.success_ = static_cast<SuccessType>(0);
         event_base_.fail_ = static_cast<FailType>(0);
         event_base_.exit_ = static_cast<ExitType>(0);
+        std::clog << "ParkingEventManager: RESET" << std::endl;
     }
 };
 

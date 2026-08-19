@@ -1,6 +1,6 @@
 #pragma once
 
-#include "avp_cruising_event_enum.h"
+#include "avp_cruising_event_map.h"
 #include "../../parking_event_manager.h"
 
 namespace structure
@@ -21,6 +21,26 @@ class AvpCruisingEventManager : public ParkingEventManager<AvpcActvType, AvpcAct
                                                  AvpcGuidanceIhbtType, AvpcPauseType, AvpcSuccessType,
                                                  AvpcFailType, AvpcExitType>
 {
+protected:
+    void LogEventChange(ParkingEventType event_type, int value) const noexcept override
+    {
+        const auto log = [](const auto& strmap, const char* event_name, auto event_value) {
+            const auto it = strmap.find(event_value);
+            if (it != strmap.end()) std::clog << "AvpCruisingEventManager: " << event_name << " = " << it->second << std::endl;
+        };
+        switch (event_type)
+        {
+            case ParkingEventType::ACTV_1: log(avpc_actv_strmap, "ACTV", static_cast<AvpcActvType>(value)); break;
+            case ParkingEventType::ACTV_IHBT_2: log(avpc_actv_ihbt_strmap, "ACTV_IHBT", static_cast<AvpcActvIhbtType>(value)); break;
+            case ParkingEventType::GUIDANCE_3: log(avpc_guidance_strmap, "GUIDANCE", static_cast<AvpcGuidanceType>(value)); break;
+            case ParkingEventType::GUIDANCE_IHBT_4: log(avpc_guidance_ihbt_strmap, "GUIDANCE_IHBT", static_cast<AvpcGuidanceIhbtType>(value)); break;
+            case ParkingEventType::PAUSE_5: log(avpc_pause_strmap, "PAUSE", static_cast<AvpcPauseType>(value)); break;
+            case ParkingEventType::SUCCESS_6: log(avpc_success_strmap, "SUCCESS", static_cast<AvpcSuccessType>(value)); break;
+            case ParkingEventType::FAIL_7: log(avpc_fail_strmap, "FAIL", static_cast<AvpcFailType>(value)); break;
+            case ParkingEventType::EXIT_8: log(avpc_exit_strmap, "EXIT", static_cast<AvpcExitType>(value)); break;
+            case ParkingEventType::NONE_0: default: break;
+        }
+    }
 };
 
 }  // namespace parking

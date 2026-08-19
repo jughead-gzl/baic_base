@@ -9,20 +9,6 @@ namespace function
 namespace parking
 {
 
-/** @brief APA 事件类型。 */
-enum class ApaEventType : std::uint8_t
-{
-    NONE_0,
-    ACTV_1,
-    ACTV_IHBT_2,
-    GUIDANCE_3,
-    GUIDANCE_IHBT_4,
-    PAUSE_5,
-    SUCCESS_6,
-    FAIL_7,
-    EXIT_8,
-};
-
 /** @brief APA 激活来源。 */
 enum class ApaActvType : std::uint8_t
 {
